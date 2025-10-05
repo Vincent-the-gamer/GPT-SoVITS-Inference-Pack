@@ -7,10 +7,10 @@ runtime
 .idea
 output
 logs
-SoVITS_weights*/
-GPT_weights*/
 TEMP
 weight.json
+SoVITS_weights*/
+GPT_weights*/
 ffmpeg*
 ffprobe*
 cfg.json

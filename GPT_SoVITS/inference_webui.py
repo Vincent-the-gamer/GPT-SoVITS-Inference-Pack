@@ -6,20 +6,7 @@
 全部按英文识别
 全部按日文识别
 """
-import psutil
-import os
 
-def set_high_priority():
-    """把当前 Python 进程设为 HIGH_PRIORITY_CLASS"""
-    if os.name != "nt":
-        return # 仅 Windows 有效
-    p = psutil.Process(os.getpid())
-    try:
-        p.nice(psutil.HIGH_PRIORITY_CLASS)
-        print("已将进程优先级设为 High")
-    except psutil.AccessDenied:
-        print("权限不足，无法修改优先级（请用管理员运行）")
-set_high_priority()
 import json
 import logging
 import os
@@ -227,7 +214,7 @@ v3v4set = {"v3", "v4"}
 
 
 def change_sovits_weights(sovits_path, prompt_language=None, text_language=None):
-    if "！" in sovits_path or "!" in sovits_path:
+    if "！" in sovits_path:
         sovits_path = name2sovits_path[sovits_path]
     global vq_model, hps, version, model_version, dict_language, if_lora_v3
     version, model_version, if_lora_v3 = get_sovits_version_from_path_fast(sovits_path)
@@ -235,7 +222,7 @@ def change_sovits_weights(sovits_path, prompt_language=None, text_language=None)
     is_exist = is_exist_s2gv3 if model_version == "v3" else is_exist_s2gv4
     path_sovits = path_sovits_v3 if model_version == "v3" else path_sovits_v4
     if if_lora_v3 == True and is_exist == False:
-        info = path_sovits + "SoVITS %s" % model_version + i18n("底模缺失，无法加载相应 LoRA 权重")
+        info = path_sovits + i18n("SoVITS %s 底模缺失，无法加载相应 LoRA 权重" % model_version)
         gr.Warning(info)
         raise FileExistsError(info)
     dict_language = dict_language_v1 if version == "v1" else dict_language_v2
@@ -374,7 +361,7 @@ except:
 
 
 def change_gpt_weights(gpt_path):
-    if "！" in gpt_path or "!" in gpt_path:
+    if "！" in gpt_path:
         gpt_path = name2gpt_path[gpt_path]
     global hz, max_sec, t2s_model, config
     hz = 50
@@ -599,67 +586,64 @@ from text import chinese
 
 
 def get_phones_and_bert(text, language, version, final=False):
-    text = re.sub(r' {2,}', ' ', text)
-    textlist = []
-    langlist = []
-    if language == "all_zh":
-        for tmp in LangSegmenter.getTexts(text,"zh"):
-            langlist.append(tmp["lang"])
-            textlist.append(tmp["text"])
-    elif language == "all_yue":
-        for tmp in LangSegmenter.getTexts(text,"zh"):
-            if tmp["lang"] == "zh":
-                tmp["lang"] = "yue"
-            langlist.append(tmp["lang"])
-            textlist.append(tmp["text"])
-    elif language == "all_ja":
-        for tmp in LangSegmenter.getTexts(text,"ja"):
-            langlist.append(tmp["lang"])
-            textlist.append(tmp["text"])
-    elif language == "all_ko":
-        for tmp in LangSegmenter.getTexts(text,"ko"):
-            langlist.append(tmp["lang"])
-            textlist.append(tmp["text"])
-    elif language == "en":
-        langlist.append("en")
-        textlist.append(text)
-    elif language == "auto":
-        for tmp in LangSegmenter.getTexts(text):
-            langlist.append(tmp["lang"])
-            textlist.append(tmp["text"])
-    elif language == "auto_yue":
-        for tmp in LangSegmenter.getTexts(text):
-            if tmp["lang"] == "zh":
-                tmp["lang"] = "yue"
-            langlist.append(tmp["lang"])
-            textlist.append(tmp["text"])
-    else:
-        for tmp in LangSegmenter.getTexts(text):
-            if langlist:
-                if (tmp["lang"] == "en" and langlist[-1] == "en") or (tmp["lang"] != "en" and langlist[-1] != "en"):
-                    textlist[-1] += tmp["text"]
-                    continue
-            if tmp["lang"] == "en":
-                langlist.append(tmp["lang"])
+    if language in {"en", "all_zh", "all_ja", "all_ko", "all_yue"}:
+        formattext = text
+        while "  " in formattext:
+            formattext = formattext.replace("  ", " ")
+        if language == "all_zh":
+            if re.search(r"[A-Za-z]", formattext):
+                formattext = re.sub(r"[a-z]", lambda x: x.group(0).upper(), formattext)
+                formattext = chinese.mix_text_normalize(formattext)
+                return get_phones_and_bert(formattext, "zh", version)
             else:
-                # 因无法区别中日韩文汉字,以用户输入为准
-                langlist.append(language)
-            textlist.append(tmp["text"])
-    print(textlist)
-    print(langlist)
-    phones_list = []
-    bert_list = []
-    norm_text_list = []
-    for i in range(len(textlist)):
-        lang = langlist[i]
-        phones, word2ph, norm_text = clean_text_inf(textlist[i], lang, version)
-        bert = get_bert_inf(phones, word2ph, norm_text, lang)
-        phones_list.append(phones)
-        norm_text_list.append(norm_text)
-        bert_list.append(bert)
-    bert = torch.cat(bert_list, dim=1)
-    phones = sum(phones_list, [])
-    norm_text = "".join(norm_text_list)
+                phones, word2ph, norm_text = clean_text_inf(formattext, language, version)
+                bert = get_bert_feature(norm_text, word2ph).to(device)
+        elif language == "all_yue" and re.search(r"[A-Za-z]", formattext):
+            formattext = re.sub(r"[a-z]", lambda x: x.group(0).upper(), formattext)
+            formattext = chinese.mix_text_normalize(formattext)
+            return get_phones_and_bert(formattext, "yue", version)
+        else:
+            phones, word2ph, norm_text = clean_text_inf(formattext, language, version)
+            bert = torch.zeros(
+                (1024, len(phones)),
+                dtype=torch.float16 if is_half == True else torch.float32,
+            ).to(device)
+    elif language in {"zh", "ja", "ko", "yue", "auto", "auto_yue"}:
+        textlist = []
+        langlist = []
+        if language == "auto":
+            for tmp in LangSegmenter.getTexts(text):
+                langlist.append(tmp["lang"])
+                textlist.append(tmp["text"])
+        elif language == "auto_yue":
+            for tmp in LangSegmenter.getTexts(text):
+                if tmp["lang"] == "zh":
+                    tmp["lang"] = "yue"
+                langlist.append(tmp["lang"])
+                textlist.append(tmp["text"])
+        else:
+            for tmp in LangSegmenter.getTexts(text):
+                if tmp["lang"] == "en":
+                    langlist.append(tmp["lang"])
+                else:
+                    # 因无法区别中日韩文汉字,以用户输入为准
+                    langlist.append(language)
+                textlist.append(tmp["text"])
+        print(textlist)
+        print(langlist)
+        phones_list = []
+        bert_list = []
+        norm_text_list = []
+        for i in range(len(textlist)):
+            lang = langlist[i]
+            phones, word2ph, norm_text = clean_text_inf(textlist[i], lang, version)
+            bert = get_bert_inf(phones, word2ph, norm_text, lang)
+            phones_list.append(phones)
+            norm_text_list.append(norm_text)
+            bert_list.append(bert)
+        bert = torch.cat(bert_list, dim=1)
+        phones = sum(phones_list, [])
+        norm_text = "".join(norm_text_list)
 
     if not final and len(phones) < 6:
         return get_phones_and_bert("." + text, language, version, final=True)
@@ -1131,7 +1115,7 @@ def html_left(text, label="p"):
                 </div>"""
 
 
-with gr.Blocks(title="GPT-SoVITS WebUI", analytics_enabled=False, js=js, css=css) as app:
+with gr.Blocks(title="GPT-SoVITS WebUI", analytics_enabled=False, js=js, css=css,theme=gr.themes.Soft()) as app:
     gr.HTML(
         top_html.format(
             i18n("本软件以MIT协议开源, 作者不对软件具备任何控制力, 使用软件者、传播软件导出的声音者自负全责.")
