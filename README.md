@@ -13,9 +13,11 @@ This fork is made for inference only.
 
 ## 我训练的模型 / Models I trained
 
-以下所有模型均可以在Release下载
+以下所有模型均可以在[Release](https://github.com/Vincent-the-gamer/GPT-SoVITS-Inference-Pack/releases)下载
 
-1. B站游戏UP主/主播：[丝茉茉i](https://space.bilibili.com/27564630)
+0. 运行所需的预训练模型: pretrained_models.zip
+
+1. B站游戏UP主/主播：[丝茉茉i](https://space.bilibili.com/27564630): silkmomo.zip
     - GPT权重文件：silkmomo-e15.ckpt
     - SoVITS权重文件：silkmomo_e8_s144.pth
 
@@ -56,6 +58,38 @@ pip install -r requirements.txt
 pip install torch torchvision torchaudio torchcodec
 ```
 
+4. 安装nltk，用于fast_langdetect识别多语言
+
+在虚拟环境中运行：
+```python
+import nltk
+nltk.download()
+```
+
+然后会跳出一个窗口，自己设置安装路径即可
+![nltk.png](.github/nltk.png)
+
+注意nltk会被识别的路径是：
+
+以macOS为例，如果没有找到nltk日志提示你的
+
+> [!TIP]
+> <UserFolder>：用户文件夹
+> 
+> <CurrentVenv>: 项目所使用的虚拟环境根目录
+
+```
+# macOS
+- '<UserFolder>/nltk_data'
+- '<CurrentVenv>/nltk_data'
+- '<CurrentVenv>/share/nltk_data'
+- '<CurrentVenv>/lib/nltk_data'
+- '/usr/share/nltk_data'
+- '/usr/local/share/nltk_data'
+- '/usr/lib/nltk_data'
+- '/usr/local/lib/nltk_data'
+```
+
 4. 运行Web UI
 ```shell
 python webui.py
@@ -71,4 +105,4 @@ warning:  No Such Model:
     GPT_SoVITS/pretrained_models/chinese-hubert-base
 ```
 
-上面的我已经打包放到Release了，如果需要其它预训练模型，需要到[Hugging Face链接](https://huggingface.co/lj1995/GPT-SoVITS/tree/main)下载对应的预训练模型放到GPT_SoVITS/pretrained_models, 缺啥下啥就好。
+上面的我已经打包放到[Release](https://github.com/Vincent-the-gamer/GPT-SoVITS-Inference-Pack/releases)了，如果需要其它预训练模型，需要到[Hugging Face链接](https://huggingface.co/lj1995/GPT-SoVITS/tree/main)下载对应的预训练模型放到GPT_SoVITS/pretrained_models, 缺啥下啥就好。
