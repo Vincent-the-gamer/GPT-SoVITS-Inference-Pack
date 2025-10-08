@@ -31,6 +31,24 @@ This fork is made for inference only.
 2. Docker镜像打包
 3. Jupyter Notebook
 
+可以使用`webui.py`启动WebUI进行推理，也可以使用`api_v2.py`来通过api调用
+
+语音生成API案例:
+
+注意：我们要生成的对话是“打得不错，哇哦”
+
+```
+POST http://127.0.0.1:9880/tts
+
+{
+    "text": "打得不错，哇哦",                   
+    "text_lang": "zh",               
+    "ref_audio_path": "/Users/<user>/Downloads/silkmomo-cankao.wav",  
+    "prompt_text": "高就是显瘦，矮就是有时候会显胖",            
+    "prompt_lang": "zh"
+}
+```
+
 ### 注意事项
 
 > [!NOTE]
@@ -106,3 +124,5 @@ warning:  No Such Model:
 ```
 
 上面的我已经打包放到[Release](https://github.com/Vincent-the-gamer/GPT-SoVITS-Inference-Pack/releases)了，如果需要其它预训练模型，需要到[Hugging Face链接](https://huggingface.co/lj1995/GPT-SoVITS/tree/main)下载对应的预训练模型放到GPT_SoVITS/pretrained_models, 缺啥下啥就好。
+
+5. WebUI调通后再使用API调用。
