@@ -17,7 +17,7 @@ This fork is made for inference only.
 
 0. 运行所需的预训练模型: pretrained_models.zip
 
-1. B站游戏UP主/主播：[丝茉茉i](https://space.bilibili.com/27564630): silkmomo.zip
+1. B站游戏UP主/主播 - [丝茉茉i](https://space.bilibili.com/27564630): silkmomo.zip
     - GPT权重文件：silkmomo-e15.ckpt
     - SoVITS权重文件：silkmomo_e8_s144.pth
 
@@ -89,24 +89,24 @@ nltk.download()
 
 注意nltk会被识别的路径是：
 
-以macOS为例，如果没有找到nltk日志提示你的
-
 > [!TIP]
-> <UserFolder>：用户文件夹
+> {UserFolder}：用户文件夹
 > 
-> <CurrentVenv>: 项目所使用的虚拟环境根目录
+> {CurrentVenv}: 项目所使用的虚拟环境根目录
 
 ```
 # macOS
-- '<UserFolder>/nltk_data'
-- '<CurrentVenv>/nltk_data'
-- '<CurrentVenv>/share/nltk_data'
-- '<CurrentVenv>/lib/nltk_data'
+- '{UserFolder}/nltk_data'
+- '{CurrentVenv}/nltk_data'
+- '{CurrentVenv}/share/nltk_data'
+- '{CurrentVenv}/lib/nltk_data'
 - '/usr/share/nltk_data'
 - '/usr/local/share/nltk_data'
 - '/usr/lib/nltk_data'
 - '/usr/local/lib/nltk_data'
 ```
+
+如果你是Windows，下面四个路径可能有所不同，日志会提示你的，一般不推荐用系统路径，直接放在虚拟环境中即可。s
 
 4. 运行Web UI
 ```shell
